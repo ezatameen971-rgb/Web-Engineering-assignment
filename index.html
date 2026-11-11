@@ -29,6 +29,50 @@
             font-size: 1.1em;
             line-height: 1.8;
         }
+
+        /* ---------- Spotlight effect ---------- */
+        :root {
+            --spot-x: 50%;
+            --spot-y: 40%;
+            --spot-size: 180px;
+        }
+        .spotlight {
+            position: fixed;
+            inset: 0;
+            pointer-events: none; /* lets clicks pass through to the page */
+            z-index: 10;
+            background: radial-gradient(
+                circle at var(--spot-x) var(--spot-y),
+                rgba(255, 250, 225, 0.12) 0,
+                transparent var(--spot-size),
+                rgba(0, 0, 0, 0.82) calc(var(--spot-size) * 1.9)
+            );
+            transition: opacity 0.4s ease;
+        }
+        .spotlight.off {
+            opacity: 0;
+        }
+        .spotlight-toggle {
+            position: fixed;
+            top: 16px;
+            right: 16px;
+            z-index: 11;
+            padding: 8px 14px;
+            border: none;
+            border-radius: 20px;
+            background: #004080;
+            color: #fff;
+            font: inherit;
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+        }
+        .student-photo {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .student-photo:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 25px 6px rgba(255, 230, 150, 0.8);
+        }
     </style>
 </head>
 <body>
@@ -43,6 +87,43 @@
         <li><strong>Mobile Number:</strong> 03335505325</li>
         <li><strong>CGPA:</strong> 3.10</li>
     </ul>
+
+    <!-- Spotlight overlay: follows the mouse / finger -->
+    <div class="spotlight" id="spotlight" aria-hidden="true"></div>
+    <button class="spotlight-toggle" id="spotlightToggle" type="button">Spotlight: On</button>
+
+    <script>
+        const root = document.documentElement;
+        const spot = document.getElementById('spotlight');
+        const toggle = document.getElementById('spotlightToggle');
+
+        function moveSpot(x, y) {
+            root.style.setProperty('--spot-x', x + 'px');
+            root.style.setProperty('--spot-y', y + 'px');
+        }
+
+        window.addEventListener('mousemove', e => {
+            if (e.clientX === 0 && e.clientY === 0) return; // ignore synthetic corner events
+            moveSpot(e.clientX, e.clientY);
+        });
+        window.addEventListener('touchmove', e => {
+            const t = e.touches[0];
+            moveSpot(t.clientX, t.clientY);
+        }, { passive: true });
+
+        toggle.addEventListener('click', () => {
+            const off = spot.classList.toggle('off');
+            toggle.textContent = 'Spotlight: ' + (off ? 'Off' : 'On');
+        });
+
+        // Start with the light on the photo
+        const photo = document.querySelector('.student-photo');
+        function centerOnPhoto() {
+            const r = photo.getBoundingClientRect();
+            moveSpot(r.left + r.width / 2, r.top + r.height / 2);
+        }
+        window.addEventListener("load", centerOnPhoto);
+    </script>
 
 </body>
 </html>
